@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress SpringModelInspection -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd"
+       default-lazy-init="true">
+
+    <context:component-scan base-package="ssm" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+
+
+    <mvc:annotation-driven conversion-service="conversionService">
+        <mvc:message-converters register-defaults="true">
+            <ref bean="jsonHttpMessageConverter" />
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--静态资源被转发给servlet container的默认servlet-->
+    <mvc:default-servlet-handler />
+    <!--不配置的话静态资源仍然走核心控制器, 导致404-->
+    <!--<mvc:resources mapping="/js/**" location="/js/" />-->
+    <!--<mvc:resources mapping="/css/**" location="/css/" />-->
+    <!--<mvc:resources mapping="/images/**" location="/images/" />-->
+    <!--<mvc:resources mapping="/fonts/**" location="/fonts/" />-->
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" >
+        <property name="prefix" value="/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <property name="formatters">
+            <set>
+                <bean class="ssm.util.DateFormatter" />
+            </set>
+        </property>
+    </bean>
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >
+        <property name="maxUploadSize" value="20000000" />
+    </bean>
+
+    <bean id="jsonHttpMessageConverter"
+          class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+        <property name="fastJsonConfig" ref="fastJsonConverterConfig"/>
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=UTF-8</value>
+                <value>application/json;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="fastJsonConverterConfig" class="com.alibaba.fastjson.support.config.FastJsonConfig">
+        <property name="serializerFeatures">
+            <list>
+                <value type="com.alibaba.fastjson.serializer.SerializerFeature">WriteMapNullValue</value>
+                <value type="com.alibaba.fastjson.serializer.SerializerFeature">WriteDateUseDateFormat</value>
+                <value type="com.alibaba.fastjson.serializer.SerializerFeature">WriteEnumUsingToString</value>
+                <value type="com.alibaba.fastjson.serializer.SerializerFeature">QuoteFieldNames</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>
